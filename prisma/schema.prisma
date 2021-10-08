@@ -7,27 +7,59 @@ generator client {
   provider = "prisma-client-js"
 }
 
-model User {
-  id       Int    @id @default(autoincrement())
-  name     String
-  password String
-  Post     Post[]
-  Like     Like[]
-}
-
-model Post {
-  id        Int      @id @default(autoincrement())
-  user      User     @relation(fields: [userId], references: [id])
-  userId    Int
-  body      String
-  timeStamp DateTime @default(now())
-  like      Like[]
-}
-
-model Like {
-  id     Int  @id @default(autoincrement())
-  post   Post @relation(fields: [postId], references: [id])
-  postId Int
-  user   User @relation(fields: [userId], references: [id])
+model UserProps {
+  id     Int    @id @default(autoincrement())
+  value  String
+  type   String
+  name   String
   userId Int
+  user   User   @relation(fields: [userId], references: [id])
+}
+
+model MagicLink {
+  id         Int      @id @default(autoincrement())
+  token      String
+  expiration DateTime
+  used       Boolean
+}
+
+model User {
+  id              Int         @id @default(autoincrement())
+  created_at      DateTime
+  first_name      String
+  platform_id     String
+  platform        String
+  main            Boolean
+  main_id         Int
+  last_name       String
+  utc_hour        Int
+  organization_id Int
+  UserProps       UserProps[]
+}
+
+model Exercise {
+  id          Int      @id @default(autoincrement())
+  created_at  DateTime
+  modified_at DateTime
+  name        String
+}
+
+model ExerciseFields {
+  id    Int               @id @default(autoincrement())
+  name  String
+  label String
+  type  ExerciseFieldType
+}
+
+enum ExerciseFieldType {
+  STRING
+  INTEGER
+  SELECT
+  ARRAY
+  HIDDEN
+  REFERENCE
+  CONTENT
+  DEPENDANT
+  SKIP
+  REPEAT
 }

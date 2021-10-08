@@ -21,9 +21,17 @@ export const typeDefs = gql`
     user: User
     userId: Int
   }
+  type Data {
+    name: String
+    domain: String
+    website: String
+    incorporation_date: String
+  }
   type Query {
     AllPosts: [Post!]!
     AllUsers: [User!]!
+    TableName: [String]
+    TableData(name: String): [Data]
   }
   type Mutation {
     AddPost(body: String!): Post!
