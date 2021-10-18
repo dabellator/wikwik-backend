@@ -3,7 +3,7 @@
 
 
 type Query {
-  user(id: Int): User
+  user: User
 }
 
 type Response {
@@ -20,6 +20,7 @@ type User {
   organization_id: Int
   platform: String
   platform_id: String
+  user_props: [UserProps]
   utc_hour: Int
 }
 

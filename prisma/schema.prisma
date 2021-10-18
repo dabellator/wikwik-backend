@@ -25,6 +25,7 @@ model MagicLink {
 
 model User {
   id              Int         @id @default(autoincrement())
+  email String @unique
   created_at      DateTime
   first_name      String
   platform_id     String
@@ -34,7 +35,7 @@ model User {
   last_name       String
   utc_hour        Int
   organization_id Int
-  UserProps       UserProps[]
+  user_props       UserProps[]
 }
 
 model Exercise {
@@ -42,13 +43,32 @@ model Exercise {
   created_at  DateTime
   modified_at DateTime
   name        String
+  organizations_initial InitialExercise[]
+  fields ExerciseField[]
 }
 
-model ExerciseFields {
+model ExerciseField {
   id    Int               @id @default(autoincrement())
   name  String
   label String
   type  ExerciseFieldType
+  exercise_id Int
+  exercise Exercise @relation(fields: [exercise_id], references: [id])
+}
+
+model InitialExercise {
+  id Int @id @default(autoincrement())
+  organization Organization @relation(fields: [organization_id], references: [id])
+  organization_id Int
+  exercise Exercise @relation(fields: [exercise_id], references: [id])
+  exercise_id Int
+  order Int
+}
+
+model Organization {
+  id Int @id @default(autoincrement())
+  name String
+  initial_exercises InitialExercise[]
 }
 
 enum ExerciseFieldType {
