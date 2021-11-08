@@ -1,4 +1,3 @@
-// /graphql/schema.ts
 import { makeSchema } from 'nexus'
 import { join } from 'path'
 import * as types from './types'
@@ -11,6 +10,6 @@ export const schema = makeSchema({
   },
   contextType: {
     export: 'Context',
-    module: join(process.cwd(), 'src', 'context.ts'),
+    module: join(process.cwd(), 'src', 'server.ts'),
   },
 })

@@ -1,14 +1,15 @@
 version: "3.8"
 services:
-  db:
-    image: postgres:13
-    env_file:
-      - .env
-    volumes:
-      - postgres:/var/lib/postgresql/data
-    ports:
-      - 5432:5432
+  postgres-wikwik:
+      image: postgres:13.2
+      ports:
+          - "5432:5432"
+      volumes:
+          - "postgres-data:/var/lib/postgresql/data"
+      environment:
+          POSTGRES_DB: wikwik
+          POSTGRES_USER: wikwik_api
+          POSTGRES_PASSWORD: topsecret
 
 volumes:
-  postgres:
-    name: wikwik-db
+    postgres-data:

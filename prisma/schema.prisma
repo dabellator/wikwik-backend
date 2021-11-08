@@ -7,13 +7,13 @@ generator client {
   provider = "prisma-client-js"
 }
 
-model UserProps {
-  id     Int    @id @default(autoincrement())
-  value  String
-  type   String
-  name   String
-  userId Int
-  user   User   @relation(fields: [userId], references: [id])
+model IdentityProp {
+  id         Int      @id @default(autoincrement())
+  value      String
+  type       String
+  name       String
+  identityId Int
+  identity   Identity @relation(fields: [identityId], references: [id])
 }
 
 model MagicLink {
@@ -23,52 +23,89 @@ model MagicLink {
   used       Boolean
 }
 
-model User {
-  id              Int         @id @default(autoincrement())
-  email String @unique
-  created_at      DateTime
-  first_name      String
-  platform_id     String
-  platform        String
-  main            Boolean
-  main_id         Int
-  last_name       String
-  utc_hour        Int
-  organization_id Int
-  user_props       UserProps[]
+model Identity {
+  id              Int            @id @default(autoincrement())
+  email           String?        @unique
+  created_at      DateTime       @default(now())
+  first_name      String?
+  platform_id     String         @unique @default(uuid())
+  platform        String         @default("anonymous")
+  main            Boolean        @default(true)
+  main_id         Int?
+  last_name       String?
+  utc_hour        Int            @default(0)
+  organization_id Int            @default(1)
+  identity_props  IdentityProp[]
+  responses       Response[]
+  document        Document?
 }
 
 model Exercise {
-  id          Int      @id @default(autoincrement())
-  created_at  DateTime
-  modified_at DateTime
-  name        String
-  organizations_initial InitialExercise[]
-  fields ExerciseField[]
+  id                    Int             @id @default(autoincrement())
+  created_at            DateTime        @default(now())
+  modified_at           DateTime        @default(now())
+  name                  String
+  organizations_initial Organization[]
+  fields                ExerciseField[]
+  responses             Response[]
 }
 
 model ExerciseField {
-  id    Int               @id @default(autoincrement())
-  name  String
-  label String
-  type  ExerciseFieldType
+  id          Int                   @id @default(autoincrement())
+  name        String
+  label       String
+  type        ExerciseFieldType
   exercise_id Int
-  exercise Exercise @relation(fields: [exercise_id], references: [id])
+  exercise    Exercise              @relation(fields: [exercise_id], references: [id])
+  options     ExerciseFieldOption[]
 }
 
-model InitialExercise {
-  id Int @id @default(autoincrement())
-  organization Organization @relation(fields: [organization_id], references: [id])
-  organization_id Int
-  exercise Exercise @relation(fields: [exercise_id], references: [id])
-  exercise_id Int
-  order Int
+model ExerciseFieldOption {
+  id                Int           @id @default(autoincrement())
+  value             String
+  exercise_field_id Int
+  exercise_field    ExerciseField @relation(fields: [exercise_field_id], references: [id])
 }
 
 model Organization {
-  id Int @id @default(autoincrement())
-  name String
-  initial_exercises InitialExercise[]
+  id                Int        @id @default(autoincrement())
+  name              String     @unique
+  exercise_order    String[]
+  initial_exercises Exercise[]
+}
+
+model ResponseValue {
+  id          Int      @id @default(autoincrement())
+  name        String
+  value       String
+  response_id Int
+  response    Response @relation(fields: [response_id], references: [id])
+}
+
+model Response {
+  id          Int             @id @default(autoincrement())
+  created_at  DateTime?       @default(now())
+  modified_at DateTime?       @default(now())
+  deleted_at  DateTime?
+  identity_id Int
+  identity    Identity        @relation(fields: [identity_id], references: [id])
+  exercise_id Int
+  exercise    Exercise        @relation(fields: [exercise_id], references: [id])
+  values      ResponseValue[]
+  Documents   Document[]
+}
+
+model Document {
+  id          Int        @id @default(autoincrement())
+  created_at  DateTime   @default(now())
+  identity_id Int        @unique
+  identify    Identity   @relation(fields: [identity_id], references: [id])
+  response_id Int
+  response    Response   @relation(fields: [response_id], references: [id])
+  index       Int        @default(0)
+  parent_id   Int?
+  parent      Document?  @relation("DocumentHierarchy", fields: [parent_id], references: [id])
+  children    Document[] @relation("DocumentHierarchy")
 }
 
 enum ExerciseFieldType {

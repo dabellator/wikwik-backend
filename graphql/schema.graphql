@@ -2,32 +2,89 @@
 ### Do not make changes to this file directly
 
 
-type Query {
-  user: User
-}
-
-type Response {
+type Exercise {
+  created_at: String
+  fields: [ExerciseField]
   id: Int
+  name: String
 }
 
-type User {
+type ExerciseField {
+  id: Int
+  label: String
+  name: String
+  options: [String]
+  type: ExerciseFieldType
+}
+
+enum ExerciseFieldType {
+  ARRAY
+  CONTENT
+  DEPENDANT
+  HIDDEN
+  INTEGER
+  REFERENCE
+  REPEAT
+  SELECT
+  SKIP
+  STRING
+}
+
+type Identity {
   created_at: String
   first_name: String
   id: Int
+  identity_props: [IdentityProps]
   last_name: String
   main: Boolean
   main_id: Int
   organization_id: Int
   platform: String
   platform_id: String
-  user_props: [UserProps]
   utc_hour: Int
 }
 
-type UserProps {
+type IdentityProps {
   id: Int
+  identityId: Int
   name: String
   type: String
-  userId: Int
   value: String
+}
+
+type Mutation {
+  createAnonymousUser: Identity
+  createResponse(exercise: Int!, values: [ResponseValueInput]): Response!
+}
+
+type Organization {
+  id: Int
+  initial_exercises: [Exercise!]!
+  name: String
+}
+
+type Query {
+  exercise(id: Int): Exercise
+  getMyResponses: [Response]
+  identity: Identity
+  organization(org_name: String = "default"): Organization
+}
+
+type Response {
+  exercise_id: Int
+  id: Int
+  identity_id: Int
+  values: [ResponseValue]
+}
+
+type ResponseValue {
+  id: Int
+  name: String
+  response_id: Int
+  value: String
+}
+
+input ResponseValueInput {
+  name: String!
+  value: String!
 }

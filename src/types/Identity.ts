@@ -1,9 +1,8 @@
-// /graphql/types/User.ts
 import { AuthenticationError } from 'apollo-server-errors'
-import { enumType, extendType, intArg, objectType } from 'nexus'
+import { extendType, objectType } from 'nexus'
 
-export const User = objectType({
-  name: 'User',
+export const Identity = objectType({
+  name: 'Identity',
   definition(t) {
     t.int('id')
     t.string('created_at')
@@ -15,10 +14,10 @@ export const User = objectType({
     t.int('main_id')
     t.int('utc_hour')
     t.int('organization_id')
-    t.list.field('user_props', {
-      type: UserProps,
+    t.list.field('identity_props', {
+      type: IdentityProps,
       async resolve(_parent, _args, ctx) {
-        return await ctx.prisma.userProps
+        return await ctx.prisma.identityProp
           .findMany({
             where: {}
           })
@@ -27,27 +26,27 @@ export const User = objectType({
   },
 })
 
-export const UserProps = objectType({
-  name: 'UserProps',
+export const IdentityProps = objectType({
+  name: 'IdentityProps',
   definition(t) {
     t.int('id')
     t.string('value')
     t.string('type')
     t.string('name')
-    t.int('userId')
+    t.int('identityId')
   }
 })
 // How to handle apollo upsert - https://www.prisma.io/docs/reference/api-reference/prisma-client-reference#upsert
-export const UserQuery = extendType({
+export const IdentityQuery = extendType({
   type: 'Query',
   definition(t) {
-    t.field('user', {
-      type: 'User',
+    t.field('identity', {
+      type: 'Identity',
       async resolve(_parent, _args, { isAuthenticated, prisma }) {
         let  queryResult = null;
         try {
           const isAuthed = await isAuthenticated;
-          queryResult = await prisma.user.findUnique({
+          queryResult = await prisma.identity.findUnique({
             where: {
               email: 'jordanbundy@gmail.com'
             }
@@ -61,9 +60,24 @@ export const UserQuery = extendType({
   }
 })
 
-export const Response = objectType({
-  name: 'Response',
+export const IdentityMutation = extendType({
+  type: 'Mutation',
   definition(t) {
-    t.int('id')
-  },
+    t.field('createAnonymousUser', {
+      type: Identity,
+      async resolve(_parent, _args, { prisma }) {
+        let queryResult = null;
+        try {
+          queryResult = await prisma.identity.create({
+            data: {
+              // I don't think we need to pass anything in just yet
+            }
+          })
+          return queryResult;
+        } catch(e) {
+          throw new Error(e)
+        }
+      }
+    })
+  }
 })
