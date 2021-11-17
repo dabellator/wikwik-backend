@@ -1,0 +1,27 @@
+service: wikwik-be
+plugins:
+  - serverless-dotenv-plugin
+
+provider:
+  name: aws
+  region: us-west-2
+  runtime: nodejs14.x
+
+functions:
+  graphql:
+    handler: dist/server.graphqlHandler
+    events:
+      - http:
+          method: POST
+          path: /
+          cors: true
+      - http:
+          path: /
+          method: GET
+          cors: true
+
+# only include the Prisma binary required on AWS Lambda while packaging
+package:
+  patterns:
+    - '!node_modules/.prisma/client/query-engine-*'
+    - 'node_modules/.prisma/client/query-engine-rhel-*'
