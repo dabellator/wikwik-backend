@@ -1,11 +1,11 @@
 import { AuthenticationError } from 'apollo-server-errors'
-import { extendType, objectType } from 'nexus'
+import { extendType, nonNull, objectType, stringArg } from 'nexus'
+import { verifyToken } from '../utils/verifyToken'
 
 export const Identity = objectType({
   name: 'Identity',
   definition(t) {
     t.int('id')
-    t.string('created_at')
     t.string('first_name')
     t.string('last_name')
     t.string('platform_id') // This is where I need to store either the anonId or the sub id
@@ -74,6 +74,34 @@ export const IdentityMutation = extendType({
             }
           })
           return queryResult;
+        } catch(e) {
+          throw new Error(e)
+        }
+      }
+    }),
+    t.field('updateIdentityAuthentication', {
+      type: Identity,
+      args: { authToken: nonNull(stringArg()), anonID: nonNull(stringArg())},
+      async resolve(_parent, { authToken, anonID }, { prisma }) {
+        const { sub } = await verifyToken(authToken);
+        try {
+          const identity = await prisma.identity.findUnique({
+            where: { platform_id: sub },
+          })
+          if (!identity) {
+            const newIdentity = await prisma.identity.upsert({
+              where: { platform_id: anonID },
+              update: {
+                platform_id: sub
+              },
+              create: {
+                platform_id: sub
+              }
+            })
+
+            return newIdentity;
+          }
+          return identity;
         } catch(e) {
           throw new Error(e)
         }

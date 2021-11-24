@@ -20,33 +20,26 @@ const server = new ApolloServer({
     let anonID;
     // need to manage current user vs anon
     try {
-      const authHeader = req.headers.authorization || '';
+      const authHeader: string = req.headers.authorization || '';
+      const anonHeader: string = req.headers['x-anon-id'] as string || '';
       if (authHeader) {
-        const [ type, token ] = authHeader.split(' ');
-        if (type === 'Bearer') {
-          const payload = await verifyToken(token);
-          isAuthenticated = payload ? true : false;
-          const authIdentity = await prisma.identity.upsert({
-            where: { platform_id: payload.sub },
-            update: {},
-            create: {
-              platform_id: payload.sub
-            }
-          })
-          authID = authIdentity.id;
-        }
-      } else {
-        const anonHeader = req.headers['x-anon-id'] as string || '';
-        if (anonHeader) {
-          const anonIdentity = await prisma.identity.upsert({
-            where: { platform_id: anonHeader },
-            update: {},
-            create: {
-              platform_id: anonHeader
-            }
-          })
-          anonID = anonIdentity.id;
-        }
+        const [ _type, token ] = authHeader.split(' ');
+
+        const payload = await verifyToken(token);
+        isAuthenticated = payload ? true : false;
+        const authIdentity = await prisma.identity.findUnique({
+          where: { platform_id: payload.sub },
+        })
+        authID = authIdentity?.id;
+      } else if (anonHeader) {
+        const anonIdentity = await prisma.identity.upsert({
+          where: { platform_id: anonHeader },
+          update: {},
+          create: {
+            platform_id: anonHeader
+          }
+        })
+        anonID = anonIdentity.id;
 
         res.header('Set-Cookie', `id=${anonHeader}; Max-Age=2592000;`)
       }
